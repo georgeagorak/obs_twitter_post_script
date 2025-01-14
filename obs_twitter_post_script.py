@@ -64,9 +64,11 @@ def script_description():
 
 def timer_callback():
       global sendTweet
-      
-      stream = twitch_info.get_stream(user_id=user_id, client_id=config_file.client_id, acces_token=access_token)
-      current_time = datetime.datetime.now().strftime("%d/%m/%Y at %H:%M")
+
+      if not sendTweet:
+            stream = twitch_info.get_stream(user_id=user_id, client_id=config_file.client_id, acces_token=access_token)
+            current_time = datetime.datetime.now().strftime("%d/%m/%Y at %H:%M")
+            
       if stream == "This user is not streaming":
             print("This user is not streaming")
       else:
@@ -74,7 +76,7 @@ def timer_callback():
             if obspython.obs_frontend_streaming_active() and not sendTweet:
                   sendTweet = True
                   print("Stream is active...")
-                  client.create_tweet(text=f"AY YOU! On {current_time} Nerd Just started streaming {stream['game_name']} titled ''{stream['title']}''\nAgenda:\n{text_string}\n ┌( ͝° ͜ʖ͡°)=ε/̵͇̿̿/’̿’̿ ̿ , https://www.twitch.tv/jurgon56")
+                  client.create_tweet(text=f"AY YOU! On {current_time} Nerd Just started streaming {stream['game_name']} titled ''{stream['title']}'' \n Agenda: \n {text_string}\n ┌( ͝° ͜ʖ͡°)=ε/̵͇̿̿/’̿’̿ ̿ , https://www.twitch.tv/jurgon56")
                   print("X post sent!...")
             elif not obspython.obs_frontend_streaming_active() and sendTweet:
                   sendTweet = False
