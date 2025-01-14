@@ -3,9 +3,7 @@ import config_file #local config with keys
 import obspython
 import datetime
 import twitch_info
-
-# from twitchAPI.twitch import Twitch
-# from twitchAPI.helper import first
+import tkinter as tk
 
 sendTweet = False
 
@@ -15,6 +13,46 @@ api_key = tweepy.API(auth)
 
 access_token = twitch_info.get_access_token(client_id=config_file.client_id, client_secret=config_file.client_secret)
 user_id = twitch_info.get_user_id(user_name="jurgon56", client_id=config_file.client_id, acces_token=access_token)
+
+text_string = ""
+
+def save_text_to_file(text):
+    with open("submitted_texts.txt", "w") as file:  # Overwrite the file
+        file.write(text + "\n")
+
+def load_texts_from_file():
+    global text_string
+    try:
+        with open("submitted_texts.txt", "r") as file:
+            text_string = file.read().strip()
+    except FileNotFoundError:
+        text_string = ""
+
+def submit_text():
+    text = entry.get("1.0", tk.END).strip()  # Get text from Text widget
+    save_text_to_file(text)
+    load_texts_from_file()
+    window.destroy()  # Close the GUI
+    obspython.timer_add(timer_callback, 15 * 1000)  # Start the timer callback
+
+def create_gui():
+    global entry, window
+    window = tk.Tk()
+    window.title("Submit Text")
+
+    label = tk.Label(window, text="Enter text:")
+    label.pack()
+
+    entry = tk.Text(window, width=50, height=10)  # Wider and longer text field
+    entry.pack()
+
+    if text_string:
+        entry.insert(tk.END, text_string)  # Insert existing text into the text field
+
+    submit_button = tk.Button(window, text="Submit", command=submit_text)
+    submit_button.pack()
+
+    window.mainloop()
 
 def script_description():
       return """<center><h2>Send X post Script</h2></center>
@@ -36,14 +74,19 @@ def timer_callback():
             if obspython.obs_frontend_streaming_active() and not sendTweet:
                   sendTweet = True
                   print("Stream is active...")
-                  client.create_tweet(text=f"AY YOU! On {current_time} Nerd Just started streaming {stream['game_name']} titled ''{stream['title']}'' ┌( ͝° ͜ʖ͡°)=ε/̵͇̿̿/’̿’̿ ̿ , https://www.twitch.tv/jurgon56")
+                  client.create_tweet(text=f"AY YOU! On {current_time} Nerd Just started streaming {stream['game_name']} titled ''{stream['title']}''\nAgenda:\n{text_string}\n ┌( ͝° ͜ʖ͡°)=ε/̵͇̿̿/’̿’̿ ̿ , https://www.twitch.tv/jurgon56")
                   print("X post sent!...")
             elif not obspython.obs_frontend_streaming_active() and sendTweet:
                   sendTweet = False
                   print("Stream is not active...")
 
+
+
 print(f"Start send_tweet_when_start_stream.py...")
-obspython.timer_add(timer_callback, 15 * 1000)
+load_texts_from_file()
+print(f"Start GUI of send_tweet_when_start_stream.py...")
+create_gui()
+# obspython.timer_add(timer_callback, 15 * 1000)  # Moved to submit_text function
 
 
 
