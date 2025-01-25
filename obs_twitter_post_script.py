@@ -33,7 +33,9 @@ def submit_text():
     save_text_to_file(text)
     load_texts_from_file()
     window.destroy()  # Close the GUI
+    print(f"END GUI of send_tweet_when_start_stream.py...")
     obspython.timer_add(timer_callback, 15 * 1000)  # Start the timer callback
+    print(f"Start looping callback ...")
 
 def create_gui():
     global entry, window
@@ -64,19 +66,21 @@ def script_description():
 
 def timer_callback():
       global sendTweet
+      current_time = datetime.datetime.now().strftime("%d/%m/%Y at %H:%M")
       stream = "This user is not streaming"
       if not sendTweet:
             stream = twitch_info.get_stream(user_id=user_id, client_id=config_file.client_id, acces_token=access_token)
-            current_time = datetime.datetime.now().strftime("%d/%m/%Y at %H:%M")
-            
+
       if stream == "This user is not streaming":
             print("This user is not streaming")
       else:
             print("Streaming now...")
             if obspython.obs_frontend_streaming_active() and not sendTweet:
+                  current_time = datetime.datetime.now().strftime("%d/%m/%Y at %H:%M")
+                  load_texts_from_file()
                   sendTweet = True
                   print("Stream is active...")
-                  client.create_tweet(text=f"AY YOU! On {current_time} Nerd Just started streaming {stream['game_name']} titled ''{stream['title']}''\nAgenda:\n{text_string}\n┌( ͝° ͜ʖ͡°)=ε/̵͇̿̿/’̿’̿ ̿  https://www.twitch.tv/jurgon56")
+                  client.create_tweet(text=f"{current_time}: Nerd Just started streaming {stream['game_name']} titled ''{stream['title']}''\nAgenda:\n{text_string}\n ┌( ͝° ͜ʖ͡°)=ε/̵͇̿̿/’̿’̿ ̿  https://www.twitch.tv/jurgon56")
                   print("X post sent!...")
             elif not obspython.obs_frontend_streaming_active() and sendTweet:
                   sendTweet = False
@@ -84,11 +88,10 @@ def timer_callback():
 
 
 
-print(f"Start send_tweet_when_start_stream.py...")
+print(f"Start send_tweet_when_start_stream.py script...")
 load_texts_from_file()
 print(f"Start GUI of send_tweet_when_start_stream.py...")
 create_gui()
-obspython.timer_add(timer_callback, 15 * 1000)  # Moved to submit_text function
 
 
 
